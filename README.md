@@ -1,5 +1,8 @@
 # FinPath AI
 
+- Live demo: https://finpath-ai-nexforge.vercel.app
+- Repository: https://github.com/Rohan5commit/finpath-ai
+
 FinPath AI is an AI-powered financial planning and financial literacy platform for students and young adults.
 It turns raw money habits into a simple financial health snapshot, personalized budget guidance, savings roadmaps,
 grounded follow-up answers, and scenario planning that still works even if no AI key is present.
