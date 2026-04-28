@@ -472,9 +472,14 @@ export function buildFallbackChatReply(profile: FinancialProfile, analysis: Anal
     return `${baselineScenario.explanation} If you want the cleanest next move, focus on ${primaryGoal?.name ?? "your main goal"} first. ${DISCLAIMER}`;
   }
 
+  if (normalized.includes("friends") || normalized.includes("social")) {
+    return `Start with flexible costs that do not change your social life much: subscriptions, delivery markups, convenience snacks, or one extra takeout habit. Protect a small weekly social budget and redirect the rest toward your main savings goal. ${DISCLAIMER}`;
+  }
+
   if (normalized.includes("budget") || normalized.includes("spend") || normalized.includes("cut")) {
-    const biggestBucket = [...analysis.budgetBreakdown].sort((a, b) => b.amount - a.amount)[0];
-    return `Your biggest budget lever is ${biggestBucket.label.toLowerCase()}. Start with the smallest recurring cut there, not the most painful one, so the plan stays realistic. ${DISCLAIMER}`;
+    const lifestyleBucket = analysis.budgetBreakdown.find((bucket) => bucket.label === "Lifestyle");
+    const focusBucket = lifestyleBucket ?? analysis.budgetBreakdown[0];
+    return `Your fastest budgeting lever is ${focusBucket.label.toLowerCase()}. Start with the smallest recurring cut there, not the most painful one, so the plan stays realistic. ${DISCLAIMER}`;
   }
 
   if (normalized.includes("emergency") || normalized.includes("cushion") || normalized.includes("buffer")) {
