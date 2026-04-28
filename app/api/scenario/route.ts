@@ -1,25 +1,21 @@
 import { NextResponse } from "next/server";
 import { buildScenarioOutcome } from "@/lib/finance";
-import type { FinancialProfile } from "@/lib/types";
+import { parseScenarioRequest } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as {
-      profile?: FinancialProfile;
-      saveBoostPercent?: number;
-      expenseTrimPercent?: number;
-    };
-
-    if (!body.profile) {
-      return NextResponse.json({ error: "Missing profile." }, { status: 400 });
+    const rawBody = await request.json();
+    const parsed = parseScenarioRequest(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
     const scenario = buildScenarioOutcome(
-      body.profile,
-      Number(body.saveBoostPercent ?? 20),
-      Number(body.expenseTrimPercent ?? 5),
+      parsed.data.profile,
+      parsed.data.saveBoostPercent,
+      parsed.data.expenseTrimPercent,
     );
 
     return NextResponse.json({ scenario });

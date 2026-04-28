@@ -1,39 +1,41 @@
 import { NextResponse } from "next/server";
-import { buildHeuristicAnalysis } from "@/lib/finance";
-import { buildAnalysisPrompt, ANALYSIS_SYSTEM_PROMPT } from "@/lib/prompts";
 import { callNimJson, mergeAnalysisPatch, nimConfigured, normalizeAiAnalysisPatch } from "@/lib/ai";
-import type { FinancialProfile } from "@/lib/types";
+import { buildHeuristicAnalysis } from "@/lib/finance";
+import { ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt } from "@/lib/prompts";
+import { parseAnalyzeRequest } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { profile?: FinancialProfile };
-    if (!body.profile) {
-      return NextResponse.json({ error: "Missing financial profile." }, { status: 400 });
+    const rawBody = await request.json();
+    const parsed = parseAnalyzeRequest(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const fallback = buildHeuristicAnalysis(body.profile);
+    const { profile } = parsed.data;
+    const fallback = buildHeuristicAnalysis(profile);
 
     if (!nimConfigured()) {
-      return NextResponse.json({ analysis: fallback, usedFallback: true, reason: "missing_api_key" });
+      return NextResponse.json({ analysis: fallback, usedFallback: true, reason: "demo_mode" });
     }
 
     try {
       const raw = await callNimJson({
         systemPrompt: ANALYSIS_SYSTEM_PROMPT,
-        userPrompt: buildAnalysisPrompt(body.profile, fallback),
+        userPrompt: buildAnalysisPrompt(profile, fallback),
         temperature: 0.2,
-        maxTokens: 1400,
+        maxTokens: 1100,
       });
       const patch = normalizeAiAnalysisPatch(raw, fallback);
       const analysis = mergeAnalysisPatch(fallback, patch);
       return NextResponse.json({ analysis, usedFallback: false });
-    } catch (error) {
+    } catch {
       return NextResponse.json({
         analysis: fallback,
         usedFallback: true,
-        reason: error instanceof Error ? error.message : "nim_request_failed",
+        reason: "live_ai_unavailable",
       });
     }
   } catch {

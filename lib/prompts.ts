@@ -1,91 +1,99 @@
 import type { Analysis, ChatMessage, FinancialProfile } from "@/lib/types";
 
-    export const ANALYSIS_SYSTEM_PROMPT = `You are FinPath AI, a financial planning and financial literacy assistant for students and young adults.
-    Rules:
-    - Output valid JSON only.
-    - Be practical, kind, and simple.
-    - Stay educational and non-regulated.
-    - Do not give investment recommendations, tax advice, legal advice, or guaranteed outcomes.
-    - Use plain English with short sentences.
-    - Ground all guidance in the provided profile and deterministic metrics.`;
+export const CHAT_DISCLAIMER = "This is general education, not personal financial advice.";
+export const MAX_CHAT_WORDS = 90;
 
-    export const ANALYSIS_SCHEMA_PROMPT = `Return this JSON shape exactly:
-    {
-      "summary": "string",
-      "coachMessage": "string",
-      "budgetAdvice": ["string", "string", "string"],
-      "savingsPlan": {
-        "headline": "string",
-        "milestones": ["string", "string", "string"],
-        "recommendedAutomation": "string"
-      },
-      "riskAlerts": [
-        { "title": "string", "severity": "low|medium|high", "detail": "string" }
-      ],
-      "spendingInsights": [
-        { "title": "string", "detail": "string", "severity": "low|medium|high" }
-      ],
-      "learningCards": [
-        { "title": "string", "body": "string", "whyItMatters": "string" }
-      ],
-      "actionChecklist": [
-        { "label": "string", "timeframe": "string", "impact": "low|medium|high", "reason": "string" }
-      ],
-      "topWins": ["string", "string", "string"],
-      "topGaps": ["string", "string", "string"]
-    }`;
+export const ANALYSIS_SYSTEM_PROMPT = `You are FinPath AI, a financial planning and financial literacy assistant for students and young adults.
+Rules:
+- Output valid JSON only.
+- Be practical, kind, and simple.
+- Stay educational and non-regulated.
+- Do not give investment recommendations, tax advice, legal advice, or guaranteed outcomes.
+- Use plain English with short sentences.
+- Ground all guidance in the provided profile and deterministic metrics.`;
 
-    export function buildAnalysisPrompt(profile: FinancialProfile, fallback: Analysis) {
-      return `Profile:
+export const ANALYSIS_SCHEMA_PROMPT = `Return this JSON shape exactly:
+{
+  "summary": "string",
+  "coachMessage": "string",
+  "budgetAdvice": ["string", "string", "string"],
+  "savingsPlan": {
+    "headline": "string",
+    "milestones": ["string", "string", "string"],
+    "recommendedAutomation": "string"
+  },
+  "riskAlerts": [
+    { "title": "string", "severity": "low|medium|high", "detail": "string" }
+  ],
+  "spendingInsights": [
+    { "title": "string", "detail": "string", "severity": "low|medium|high" }
+  ],
+  "learningCards": [
+    { "title": "string", "body": "string", "whyItMatters": "string" }
+  ],
+  "actionChecklist": [
+    { "label": "string", "timeframe": "string", "impact": "low|medium|high", "reason": "string" }
+  ],
+  "topWins": ["string", "string", "string"],
+  "topGaps": ["string", "string", "string"]
+}`;
+
+export function buildAnalysisPrompt(profile: FinancialProfile, fallback: Analysis) {
+  return `Profile:
 ${JSON.stringify(profile, null, 2)}
 
 Deterministic baseline (keep financial math aligned to this context):
 ${JSON.stringify(
-        {
-          healthScore: fallback.healthScore,
-          healthLabel: fallback.healthLabel,
-          snapshot: fallback.snapshot,
-          budgetBreakdown: fallback.budgetBreakdown,
-          savingsRoadmap: fallback.savingsRoadmap,
-          riskAlerts: fallback.riskAlerts,
-          spendingInsights: fallback.spendingInsights,
-        },
-        null,
-        2,
-      )}
+    {
+      healthScore: fallback.healthScore,
+      healthLabel: fallback.healthLabel,
+      snapshot: fallback.snapshot,
+      budgetBreakdown: fallback.budgetBreakdown,
+      savingsRoadmap: fallback.savingsRoadmap,
+      riskAlerts: fallback.riskAlerts,
+      spendingInsights: fallback.spendingInsights,
+    },
+    null,
+    2,
+  )}
 
 ${ANALYSIS_SCHEMA_PROMPT}
 
 Keep each array to 2-4 useful items. Use no jargon. Mention tradeoffs clearly. Do not contradict the math.`;
-    }
+}
 
-    export const CHAT_SYSTEM_PROMPT = `You are FinPath AI, an educational financial planning coach for students and young adults.
-    Rules:
-    - Answer in under 90 words.
-    - Stay grounded in the supplied profile and dashboard context.
-    - Keep language non-jargony and practical.
-    - Do not provide regulated financial advice or guarantees.
-    - Do not use markdown lists.
-    - End with a brief educational disclaimer sentence.`;
+export const CHAT_SYSTEM_PROMPT = `You are FinPath AI, an educational financial planning coach for students and young adults.
+Rules:
+- Answer in one short paragraph.
+- Stay under 75 words before the disclaimer.
+- Stay grounded in the supplied profile and dashboard context.
+- Keep language non-jargony and practical.
+- Do not provide regulated financial advice or guarantees.
+- Do not use markdown lists or bullet points.
+- End exactly with this sentence: ${CHAT_DISCLAIMER}`;
 
-    export function buildChatMessages(
-      profile: FinancialProfile,
-      analysis: Analysis,
-      history: ChatMessage[],
-      question: string,
-    ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
-      const context = `Profile: ${JSON.stringify(profile)}
+export function buildChatMessages(
+  profile: FinancialProfile,
+  analysis: Analysis,
+  history: ChatMessage[],
+  question: string,
+): Array<{ role: "system" | "user" | "assistant"; content: string }> {
+  const recentHistory = history.slice(-6);
+  const context = `Profile: ${JSON.stringify(profile)}
 Analysis summary: ${analysis.summary}
 Budget advice: ${analysis.budgetAdvice.join(" | ")}
 Savings plan: ${analysis.savingsPlan.headline}
 Risk alerts: ${analysis.riskAlerts.map((alert) => `${alert.title}: ${alert.detail}`).join(" | ")}`;
 
-      return [
-        { role: "system", content: CHAT_SYSTEM_PROMPT },
-        { role: "user", content: `${context}
+  return [
+    { role: "system", content: CHAT_SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `${context}
 
-Conversation so far: ${JSON.stringify(history)}
+Conversation so far: ${JSON.stringify(recentHistory)}
 
-User question: ${question}` },
-      ];
-    }
+User question: ${question}`,
+    },
+  ];
+}

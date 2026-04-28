@@ -10,7 +10,7 @@ grounded follow-up answers, and scenario planning that still works even if no AI
 ## Why this is strong for Nexforge
 
 - **Innovation & Originality:** financial coaching feels practical, personalized, and interactive instead of generic blog advice.
-- **Technical Execution:** clean Next.js App Router architecture, typed server routes, seeded demo accounts, CI, and Vercel deploy workflow.
+- **Technical Execution:** clean Next.js App Router architecture, typed server routes, instant seeded demos, automated tests, CI, and Vercel deploy workflow.
 - **Problem Relevance:** directly targets student and young-adult financial stress, uncertainty, and money literacy gaps.
 - **Scalability & Feasibility:** works as a consumer app today and expands naturally to schools, universities, fintech partners, and employee benefit programs.
 
@@ -26,6 +26,7 @@ grounded follow-up answers, and scenario planning that still works even if no AI
 
 - Onboarding flow for financial profile input
 - Financial health dashboard with score + summary
+- Instant seeded demo loading with background AI refresh
 - AI budgeting assistant with safe educational answers
 - Savings-goal planner with milestone pacing
 - Spending insights + risk alerts
@@ -49,6 +50,7 @@ No login is required. Judges can open `/dashboard?demo=maya-campus` (or the othe
 - **AI layer:** NVIDIA NIM via OpenAI-compatible `chat/completions`
 - **State/storage:** local demo persistence via browser storage for speed and portability
 - **Deployment:** Vercel + GitHub Actions
+- **Validation/testing:** strict request validation + Vitest coverage for finance and AI fallback logic
 
 ## Responsible AI and safety
 
@@ -61,6 +63,7 @@ No login is required. Judges can open `/dashboard?demo=maya-campus` (or the othe
 ```bash
 npm install
 cp .env.example .env.local
+npm run test
 npm run dev
 ```
 
@@ -73,8 +76,8 @@ Environment variables:
 
 ## GitHub Actions
 
-- `ci.yml` runs type-check + production build on every push and pull request.
-- `deploy.yml` deploys to Vercel on pushes to `main` using repository secrets:
+- `ci.yml` runs type-check, automated tests, and a production build on every push and pull request.
+- `deploy.yml` runs tests again before deploying to Vercel on pushes to `main` using repository secrets:
   - `VERCEL_TOKEN`
   - `VERCEL_ORG_ID`
   - `VERCEL_PROJECT_ID`
@@ -145,15 +148,21 @@ finpath-ai/
 │   ├── finance.ts
 │   ├── prompts.ts
 │   ├── types.ts
-│   └── utils.ts
+│   ├── utils.ts
+│   └── validation.ts
 ├── next-env.d.ts
 ├── next.config.ts
 ├── package.json
 ├── pitch-deck-outline.md
 ├── postcss.config.mjs
 ├── submission-description.md
+├── tests/
+│   ├── ai.test.ts
+│   ├── finance.test.ts
+│   └── validation.test.ts
 ├── tsconfig.json
-└── vercel.json
+├── vercel.json
+└── vitest.config.ts
 ```
 
 ## Submission assets in this repo
@@ -176,5 +185,5 @@ finpath-ai/
 ## Notes for judges
 
 - The app is intentionally fast to understand in under 3 minutes.
-- The seeded demos make the judging flow immediate.
+- The seeded demos open immediately, even before live AI enhancement finishes.
 - The fallback mode prevents broken demos if AI quota or secrets are unavailable.

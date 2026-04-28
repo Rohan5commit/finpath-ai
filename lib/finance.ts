@@ -1,15 +1,14 @@
 import type {
   ActionItem,
   Analysis,
+  BudgetBucket,
+  ExplainerCard,
   FinancialProfile,
   GoalRoadmap,
+  Insight,
   ProgressPoint,
   RiskAlert,
-  Insight,
   ScenarioOutcome,
-  ExplainerCard,
-  BudgetBucket,
-  SavingsGoal,
 } from "@/lib/types";
 import {
   addMonthsToDate,
@@ -33,8 +32,14 @@ interface Snapshot {
   recommendedMonthlySavings: number;
 }
 
-const DISCLAIMER =
+export const FINPATH_DISCLAIMER =
   "FinPath AI provides educational guidance only and does not replace regulated financial advice.";
+export const CHAT_DISCLAIMER = "This is general education, not personal financial advice.";
+
+function withChatDisclaimer(message: string) {
+  const normalized = message.trim().replace(/\s+/g, " ").replace(/[.!?]*$/, "");
+  return `${normalized}. ${CHAT_DISCLAIMER}`;
+}
 
 function buildSnapshot(profile: FinancialProfile): Snapshot {
   const monthlyIncome = safeNumber(profile.monthlyIncome);
@@ -53,7 +58,10 @@ function buildSnapshot(profile: FinancialProfile): Snapshot {
   const fixedRatio = monthlyIncome > 0 ? (fixedExpenses / monthlyIncome) * 100 : 0;
   const variableRatio = monthlyIncome > 0 ? (variableExpenses / monthlyIncome) * 100 : 0;
   const targetSavings = monthlyIncome > 0 ? monthlyIncome * (safeNumber(profile.savingsRateGoal) / 100) : 0;
-  const recommendedMonthlySavings = Math.max(0, Math.min(Math.max(disposableIncome, 0), targetSavings || Math.max(disposableIncome, 0)));
+  const recommendedMonthlySavings = Math.max(
+    0,
+    Math.min(Math.max(disposableIncome, 0), targetSavings || Math.max(disposableIncome, 0)),
+  );
 
   return {
     monthlyIncome,
@@ -277,7 +285,8 @@ function buildActionChecklist(profile: FinancialProfile, snapshot: Snapshot, roa
       reason: "Automation protects progress before discretionary spending expands.",
     },
     {
-      label: snapshot.variableRatio > 30 ? "Cut one flexible spending category by 10%" : "Keep flexible spending capped with a weekly limit",
+      label:
+        snapshot.variableRatio > 30 ? "Cut one flexible spending category by 10%" : "Keep flexible spending capped with a weekly limit",
       timeframe: "Next 7 days",
       impact: "high",
       reason: "A small recurring cut is usually enough to unlock goal momentum without making the plan feel punishing.",
@@ -309,18 +318,18 @@ function buildProgressSeries(snapshot: Snapshot, roadmap: GoalRoadmap[]): Progre
   }));
 }
 
-function buildBudgetAdvice(profile: FinancialProfile, snapshot: Snapshot, roadmap: GoalRoadmap[]) {
+function buildBudgetAdvice(snapshot: Snapshot, roadmap: GoalRoadmap[]) {
   const largestGap = roadmap.find((goal) => goal.gap > 0);
   return [
     snapshot.disposableIncome > 0
-      ? `You have monthly room to work with. Protect that margin before it disappears into flexible spending.`
-      : `The first job is closing the monthly cash-flow gap so your plan can start moving forward again.`,
+      ? "You have monthly room to work with. Protect that margin before it disappears into flexible spending."
+      : "The first job is closing the monthly cash-flow gap so your plan can start moving forward again.",
     snapshot.variableRatio > 30
-      ? `Your fastest improvement lever is flexible spending — even a modest trim has a visible payoff.`
-      : `Your spending mix is fairly stable, so consistency and automation will matter more than dramatic cuts.`,
+      ? "Your fastest improvement lever is flexible spending — even a modest trim has a visible payoff."
+      : "Your spending mix is fairly stable, so consistency and automation will matter more than dramatic cuts.",
     largestGap
       ? `${largestGap.name} needs about ${Math.round(largestGap.monthlyNeeded)} each month to land on time, so your current plan should bias toward that milestone first.`
-      : `Your current savings cadence is close to goal pace, so the focus should be protecting the routine instead of rebuilding it.`,
+      : "Your current savings cadence is close to goal pace, so the focus should be protecting the routine instead of rebuilding it.",
   ];
 }
 
@@ -330,7 +339,7 @@ function buildSavingsPlan(snapshot: Snapshot, roadmap: GoalRoadmap[]) {
   return {
     headline: firstGoal
       ? `Aim to lock in about ${monthlyCommitment} each month so ${firstGoal.name} becomes predictable instead of hope-based.`
-      : `Start with one automatic monthly savings move so progress no longer depends on memory or motivation.`,
+      : "Start with one automatic monthly savings move so progress no longer depends on memory or motivation.",
     milestones: firstGoal
       ? [
           `Reach the next ${Math.round(firstGoal.currentAmount + Math.max(firstGoal.monthlyContribution, 50))} in saved balance to prove the system works.`,
@@ -342,7 +351,7 @@ function buildSavingsPlan(snapshot: Snapshot, roadmap: GoalRoadmap[]) {
           "Protect it for 30 days.",
           "Then expand to a second goal bucket.",
         ],
-    recommendedAutomation: `Set an automatic transfer for ${monthlyCommitment} within 24 hours of payday so savings happen before lifestyle spending decisions.` ,
+    recommendedAutomation: `Set an automatic transfer for ${monthlyCommitment} within 24 hours of payday so savings happen before lifestyle spending decisions.`,
   };
 }
 
@@ -371,11 +380,11 @@ function buildSummary(profile: FinancialProfile, snapshot: Snapshot, score: numb
   return `${profile.name || "You"} currently has about ${monthlyRoom >= 0 ? `${monthlyRoom}` : `-${Math.abs(monthlyRoom)}`} of monthly room after expenses, which translates to a financial health score of ${score}/100 (${label.toLowerCase()}). ${primaryGoal ? `${primaryGoal.name} is the clearest near-term milestone, so the plan should optimize for that first.` : "The next step is turning loose intention into one repeatable money system."}`;
 }
 
-function buildCoachMessage(snapshot: Snapshot, roadmap: GoalRoadmap[], profile: FinancialProfile) {
+function buildCoachMessage(snapshot: Snapshot, roadmap: GoalRoadmap[]) {
   const primaryGoal = roadmap[0];
   const automation = Math.max(Math.round(snapshot.recommendedMonthlySavings || Math.max(snapshot.disposableIncome, 0) * 0.75), 25);
   if (snapshot.disposableIncome < 0) {
-    return `Right now, the best move is not a bigger goal — it is freeing up monthly room. Start by trimming one flexible category, then automate a small starter save once the budget turns positive.`;
+    return "Right now, the best move is not a bigger goal — it is freeing up monthly room. Start by trimming one flexible category, then automate a small starter save once the budget turns positive.";
   }
   return `Best next move: automate about ${automation} on payday and tie it to ${primaryGoal?.name ?? "your first priority"}. That keeps progress simple, visible, and much less dependent on motivation.`;
 }
@@ -399,7 +408,7 @@ export function buildHeuristicAnalysis(profile: FinancialProfile): Analysis {
     generatedAt: new Date().toISOString(),
     source: "fallback",
     summary: buildSummary(profile, snapshot, score, label, savingsRoadmap),
-    coachMessage: buildCoachMessage(snapshot, savingsRoadmap, profile),
+    coachMessage: buildCoachMessage(snapshot, savingsRoadmap),
     healthScore: score,
     healthLabel: label,
     snapshot: {
@@ -412,7 +421,7 @@ export function buildHeuristicAnalysis(profile: FinancialProfile): Analysis {
       debtRatio: snapshot.debtRatio,
     },
     budgetBreakdown,
-    budgetAdvice: buildBudgetAdvice(profile, snapshot, savingsRoadmap),
+    budgetAdvice: buildBudgetAdvice(snapshot, savingsRoadmap),
     savingsPlan: buildSavingsPlan(snapshot, savingsRoadmap),
     savingsRoadmap,
     riskAlerts,
@@ -423,7 +432,7 @@ export function buildHeuristicAnalysis(profile: FinancialProfile): Analysis {
     scenarioBaseline,
     topWins,
     topGaps,
-    disclaimer: DISCLAIMER,
+    disclaimer: FINPATH_DISCLAIMER,
   };
 }
 
@@ -447,7 +456,7 @@ export function buildScenarioOutcome(
   const explanation =
     monthlySavingsAfter > baseMonthlySavings
       ? `This scenario raises monthly savings from about ${Math.round(baseMonthlySavings)} to ${Math.round(monthlySavingsAfter)}. ${goalEtaShiftMonths > 0 ? `That could pull your first goal forward by about ${goalEtaShiftMonths} month${goalEtaShiftMonths === 1 ? "" : "s"}.` : "It mainly strengthens your buffer and reduces pressure on future months."}`
-      : `This scenario does not materially improve the monthly savings path yet, so the priority should stay on freeing up stable monthly room.`;
+      : "This scenario does not materially improve the monthly savings path yet, so the priority should stay on freeing up stable monthly room.";
 
   return {
     label: `Save ${saveBoostPercent}% more + trim ${expenseTrimPercent}% of lifestyle spend`,
@@ -459,7 +468,7 @@ export function buildScenarioOutcome(
     recommendedMove:
       monthlySavingsAfter > 0
         ? `Pair a ${Math.round(monthlySavingsAfter)} monthly auto-transfer with one targeted cut in flexible spending so the improvement sticks.`
-        : `Start with one concrete spending cut or income boost first; the goal is to create positive monthly room before adding more ambition.`,
+        : "Start with one concrete spending cut or income boost first; the goal is to create positive monthly room before adding more ambition.",
   };
 }
 
@@ -469,26 +478,38 @@ export function buildFallbackChatReply(profile: FinancialProfile, analysis: Anal
   const baselineScenario = analysis.scenarioBaseline;
 
   if (normalized.includes("20%") || normalized.includes("save more") || normalized.includes("goal")) {
-    return `${baselineScenario.explanation} If you want the cleanest next move, focus on ${primaryGoal?.name ?? "your main goal"} first. ${DISCLAIMER}`;
+    return withChatDisclaimer(
+      `${baselineScenario.explanation} If you want the cleanest next move, focus on ${primaryGoal?.name ?? "your main goal"} first.`,
+    );
   }
 
   if (normalized.includes("friends") || normalized.includes("social")) {
-    return `Start with flexible costs that do not change your social life much: subscriptions, delivery markups, convenience snacks, or one extra takeout habit. Protect a small weekly social budget and redirect the rest toward your main savings goal. ${DISCLAIMER}`;
+    return withChatDisclaimer(
+      "Start with flexible costs that do not change your social life much: subscriptions, delivery markups, convenience snacks, or one extra takeout habit. Protect a small weekly social budget and redirect the rest toward your main savings goal.",
+    );
   }
 
   if (normalized.includes("budget") || normalized.includes("spend") || normalized.includes("cut")) {
     const lifestyleBucket = analysis.budgetBreakdown.find((bucket) => bucket.label === "Lifestyle");
     const focusBucket = lifestyleBucket ?? analysis.budgetBreakdown[0];
-    return `Your fastest budgeting lever is ${focusBucket.label.toLowerCase()}. Start with the smallest recurring cut there, not the most painful one, so the plan stays realistic. ${DISCLAIMER}`;
+    return withChatDisclaimer(
+      `Your fastest budgeting lever is ${focusBucket.label.toLowerCase()}. Start with the smallest recurring cut there, not the most painful one, so the plan stays realistic.`,
+    );
   }
 
   if (normalized.includes("emergency") || normalized.includes("cushion") || normalized.includes("buffer")) {
-    return `FinPath estimates roughly ${analysis.snapshot.emergencyFundMonths.toFixed(1)} months of cushion right now. A starter emergency fund should come before aggressive lifestyle upgrades because it protects every other goal. ${DISCLAIMER}`;
+    return withChatDisclaimer(
+      `FinPath estimates roughly ${analysis.snapshot.emergencyFundMonths.toFixed(1)} months of cushion right now. A starter emergency fund should come before aggressive lifestyle upgrades because it protects every other goal.`,
+    );
   }
 
   if (normalized.includes("debt")) {
-    return `Debt is using about ${Math.round(analysis.snapshot.debtRatio)}% of monthly income. Keep minimums reliable, then use any new monthly room to strengthen savings and reduce future stress. ${DISCLAIMER}`;
+    return withChatDisclaimer(
+      `Debt is using about ${Math.round(analysis.snapshot.debtRatio)}% of monthly income. Keep minimums reliable, then use any new monthly room to strengthen savings and reduce future stress.`,
+    );
   }
 
-  return `${analysis.coachMessage} The safest next step is a small automated action you can repeat every month. ${DISCLAIMER}`;
+  return withChatDisclaimer(
+    `${analysis.coachMessage} The safest next step is a small automated action you can repeat every month.`,
+  );
 }
