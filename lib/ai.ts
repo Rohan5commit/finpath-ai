@@ -112,7 +112,35 @@ export async function callNimJson({
   if (!content) {
     throw new Error("NIM returned no message content");
   }
-  return extractJson(content);
+
+  try {
+    return extractJson(content);
+  } catch {
+    const repairResponse = await requestNim({
+      model: getModel(),
+      messages: [
+        {
+          role: "system",
+          content:
+            "Convert the user content into strict valid JSON. Preserve the same intent and structure. Return JSON only with no commentary.",
+        },
+        {
+          role: "user",
+          content,
+        },
+      ],
+      temperature: 0,
+      max_tokens: maxTokens,
+      response_format: {
+        type: "json_object",
+      },
+    });
+    const repairedContent = repairResponse.choices?.[0]?.message?.content;
+    if (!repairedContent) {
+      throw new Error("NIM repair pass returned no content");
+    }
+    return extractJson(repairedContent);
+  }
 }
 
 export async function callNimText({
