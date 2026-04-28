@@ -43,8 +43,18 @@ function extractJson(content: string) {
   const first = cleaned.indexOf("{");
   const last = cleaned.lastIndexOf("}");
   const candidate = first >= 0 && last >= 0 ? cleaned.slice(first, last + 1) : cleaned;
-  return JSON.parse(candidate);
+
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    const repaired = candidate
+      .replace(/,\s*([}\]])/g, "$1")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[\u2018\u2019]/g, "'");
+    return JSON.parse(repaired);
+  }
 }
+
 
 async function requestNim(body: Record<string, unknown>) {
   const controller = new AbortController();
