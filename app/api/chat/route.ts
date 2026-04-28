@@ -29,9 +29,13 @@ export async function POST(request: Request) {
       const answer = await callNimText({
         messages: buildChatMessages(body.profile, body.analysis, body.history ?? [], body.question),
         temperature: 0.2,
-        maxTokens: 220,
+        maxTokens: 320,
       });
-      return NextResponse.json({ answer, usedFallback: false });
+      const normalizedAnswer = answer.trim();
+      if (!/[.!?]$/.test(normalizedAnswer)) {
+        return NextResponse.json({ answer: fallbackAnswer, usedFallback: true, reason: "incomplete_model_output" });
+      }
+      return NextResponse.json({ answer: normalizedAnswer, usedFallback: false });
     } catch (error) {
       return NextResponse.json({
         answer: fallbackAnswer,
