@@ -33,7 +33,7 @@ function ensureDisclaimer(value: string) {
     new RegExp(`${escapeRegExp(CHAT_DISCLAIMER)}[.!?]*$`),
     "",
   ).trim();
-  const trimmed = withoutExisting.replace(/[.!?]*$/, "");
+  const trimmed = withoutExisting.replace(/[\s,;:!?\.]+$/, "");
   return `${trimmed}. ${CHAT_DISCLAIMER}`;
 }
 
