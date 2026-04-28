@@ -72,7 +72,7 @@ Keep each array to 2-4 useful items. Use no jargon. Mention tradeoffs clearly. D
       analysis: Analysis,
       history: ChatMessage[],
       question: string,
-    ) {
+    ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
       const context = `Profile: ${JSON.stringify(profile)}
 Analysis summary: ${analysis.summary}
 Budget advice: ${analysis.budgetAdvice.join(" | ")}
