@@ -1,0 +1,119 @@
+[
+  {
+    "id": "maya-campus",
+    "label": "Maya \u00b7 campus cash flow reset",
+    "persona": "20-year-old university student balancing a part-time caf\u00e9 job, rent, and tuition stress.",
+    "blurb": "Great demo for showing how FinPath turns irregular student income into a practical emergency-fund plan.",
+    "profile": {
+      "name": "Maya",
+      "stage": "student",
+      "monthlyIncome": 1600,
+      "fixedExpenses": 620,
+      "variableExpenses": 430,
+      "debtPayments": 90,
+      "currentSavings": 480,
+      "savingsRateGoal": 18,
+      "goals": [
+        {
+          "name": "Emergency fund",
+          "targetAmount": 2000,
+          "currentAmount": 480,
+          "targetDate": "2026-10"
+        },
+        {
+          "name": "Laptop replacement fund",
+          "targetAmount": 1200,
+          "currentAmount": 150,
+          "targetDate": "2026-12"
+        }
+      ],
+      "habits": {
+        "impulseSpending": "medium",
+        "tracksSpending": true,
+        "emergencyFundMonths": 0.6,
+        "debtStress": "medium",
+        "confidence": 3,
+        "paydaySplurges": true
+      },
+      "concern": "I want to stop feeling behind every month without giving up every social activity."
+    }
+  },
+  {
+    "id": "jordan-grad",
+    "label": "Jordan \u00b7 first-job momentum",
+    "persona": "23-year-old recent graduate with a first full-time role, student debt, and a goal to move out confidently.",
+    "blurb": "Shows how FinPath supports early-career users who have more income but need better allocation and goal pacing.",
+    "profile": {
+      "name": "Jordan",
+      "stage": "early-career",
+      "monthlyIncome": 3600,
+      "fixedExpenses": 1550,
+      "variableExpenses": 920,
+      "debtPayments": 300,
+      "currentSavings": 2100,
+      "savingsRateGoal": 22,
+      "goals": [
+        {
+          "name": "Move-out buffer",
+          "targetAmount": 5000,
+          "currentAmount": 2100,
+          "targetDate": "2026-11"
+        },
+        {
+          "name": "Travel fund",
+          "targetAmount": 2500,
+          "currentAmount": 500,
+          "targetDate": "2027-02"
+        }
+      ],
+      "habits": {
+        "impulseSpending": "medium",
+        "tracksSpending": false,
+        "emergencyFundMonths": 1.4,
+        "debtStress": "medium",
+        "confidence": 4,
+        "paydaySplurges": true
+      },
+      "concern": "I make enough to save, but my money disappears before I feel real progress toward moving out."
+    }
+  },
+  {
+    "id": "aisha-intern",
+    "label": "Aisha \u00b7 internship-to-full-time runway",
+    "persona": "22-year-old intern supporting family expenses while trying to build a certification fund and a cash cushion.",
+    "blurb": "Highlights FinPath\u2019s social-impact angle: practical planning for users juggling ambition, responsibility, and limited margin.",
+    "profile": {
+      "name": "Aisha",
+      "stage": "intern",
+      "monthlyIncome": 2200,
+      "fixedExpenses": 900,
+      "variableExpenses": 540,
+      "debtPayments": 180,
+      "currentSavings": 900,
+      "savingsRateGoal": 20,
+      "goals": [
+        {
+          "name": "Career certification fund",
+          "targetAmount": 1800,
+          "currentAmount": 450,
+          "targetDate": "2026-09"
+        },
+        {
+          "name": "Emergency cushion",
+          "targetAmount": 3000,
+          "currentAmount": 900,
+          "targetDate": "2026-12"
+        }
+      ],
+      "habits": {
+        "impulseSpending": "low",
+        "tracksSpending": true,
+        "emergencyFundMonths": 1.1,
+        "debtStress": "high",
+        "confidence": 3,
+        "paydaySplurges": false
+      },
+      "concern": "I want to grow my career options, help at home, and still feel safe if an unexpected bill shows up."
+    }
+  }
+]

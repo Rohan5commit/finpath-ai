@@ -1,0 +1,29 @@
+{
+  "name": "finpath-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered financial planning and financial literacy platform for students and young adults.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "next": "16.2.4",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.2.4",
+    "@types/node": "25.6.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "postcss": "8.5.12",
+    "tailwindcss": "4.2.4",
+    "typescript": "6.0.3"
+  }
+}

@@ -1,0 +1,24 @@
+# FinPath AI Final Submission Checklist
+
+- [x] Clear product name and positioning
+- [x] Polished landing page
+- [x] Onboarding flow
+- [x] Dashboard with financial health summary
+- [x] AI budgeting assistant
+- [x] Savings-goal planner
+- [x] Spending insights panel
+- [x] Financial literacy explainer cards
+- [x] Scenario simulator
+- [x] Progress tracker
+- [x] Seeded judge demo accounts
+- [x] Demo fallback mode without API key
+- [x] README
+- [x] `.env.example`
+- [x] `architecture.md`
+- [x] `pitch-deck-outline.md`
+- [x] `demo-script.md`
+- [x] `submission-description.md`
+- [x] `elevator-pitch.md`
+- [x] GitHub Actions CI
+- [x] Vercel deploy workflow
+- [x] Public GitHub repo ready for judges
