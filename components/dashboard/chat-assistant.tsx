@@ -21,12 +21,11 @@ export function ChatAssistant({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setMessages([
-      {
-        role: "assistant",
-        content: `${analysis.coachMessage} Ask me a follow-up like “What should I cut first?” or “How do I reach my goal faster?”`,
-      },
-    ]);
+    const initialMessage: ChatMessage = {
+      role: "assistant",
+      content: `${analysis.coachMessage} Ask me a follow-up like “What should I cut first?” or “How do I reach my goal faster?”`,
+    };
+    setMessages([initialMessage]);
   }, [analysis.coachMessage]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -34,7 +33,7 @@ export function ChatAssistant({
     const trimmed = question.trim();
     if (!trimmed) return;
 
-    const nextHistory = [...messages, { role: "user", content: trimmed }];
+    const nextHistory: ChatMessage[] = [...messages, { role: "user", content: trimmed }];
     setMessages(nextHistory);
     setQuestion("");
     setLoading(true);
@@ -59,7 +58,8 @@ export function ChatAssistant({
         throw new Error(data.error || "Chat request failed.");
       }
 
-      setMessages((current) => [...current, { role: "assistant", content: data.answer! }]);
+      const assistantReply: ChatMessage = { role: "assistant", content: data.answer };
+      setMessages((current) => [...current, assistantReply]);
     } catch (chatError) {
       setError(chatError instanceof Error ? chatError.message : "Unable to get chat response.");
     } finally {
@@ -81,9 +81,15 @@ export function ChatAssistant({
           messages.map((message, index) => (
             <div
               key={`${message.role}-${index}`}
-              className={message.role === "assistant" ? "rounded-[1.5rem] border border-white/10 bg-white/5 p-4" : "ml-auto max-w-3xl rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4"}
+              className={
+                message.role === "assistant"
+                  ? "rounded-[1.5rem] border border-white/10 bg-white/5 p-4"
+                  : "ml-auto max-w-3xl rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4"
+              }
             >
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{message.role === "assistant" ? "FinPath AI" : "You"}</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                {message.role === "assistant" ? "FinPath AI" : "You"}
+              </p>
               <p className="mt-2 text-sm leading-7 text-slate-200">{message.content}</p>
             </div>
           ))
@@ -102,7 +108,9 @@ export function ChatAssistant({
         </Button>
       </form>
       {error ? <p className="mt-3 text-sm text-rose-200">{error}</p> : null}
-      <p className="mt-4 text-xs leading-6 text-slate-400">FinPath AI stays educational and avoids regulated financial advice or guarantees.</p>
+      <p className="mt-4 text-xs leading-6 text-slate-400">
+        FinPath AI stays educational and avoids regulated financial advice or guarantees.
+      </p>
     </Card>
   );
 }
