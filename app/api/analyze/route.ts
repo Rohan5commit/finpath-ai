@@ -1,44 +1,19 @@
 import { NextResponse } from "next/server";
-import { callNimJson, mergeAnalysisPatch, nimConfigured, normalizeAiAnalysisPatch } from "@/lib/ai";
+import { ProfileSchema } from "@/lib/schemas";
 import { buildHeuristicAnalysis } from "@/lib/finance";
-import { ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt } from "@/lib/prompts";
-import { parseAnalyzeRequest } from "@/lib/validation";
 
-export const runtime = "nodejs";
-
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const rawBody = await request.json();
-    const parsed = parseAnalyzeRequest(rawBody);
-    if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const body = await req.json();
+    const result = ProfileSchema.safeParse(body);
+    
+    if (!result.success) {
+      return NextResponse.json({ error: "Invalid profile data", details: result.error.format() }, { status: 400 });
     }
 
-    const { profile } = parsed.data;
-    const fallback = buildHeuristicAnalysis(profile);
-
-    if (!nimConfigured()) {
-      return NextResponse.json({ analysis: fallback, usedFallback: true, reason: "demo_mode" });
-    }
-
-    try {
-      const raw = await callNimJson({
-        systemPrompt: ANALYSIS_SYSTEM_PROMPT,
-        userPrompt: buildAnalysisPrompt(profile, fallback),
-        temperature: 0.2,
-        maxTokens: 1100,
-      });
-      const patch = normalizeAiAnalysisPatch(raw, fallback);
-      const analysis = mergeAnalysisPatch(fallback, patch);
-      return NextResponse.json({ analysis, usedFallback: false });
-    } catch {
-      return NextResponse.json({
-        analysis: fallback,
-        usedFallback: true,
-        reason: "live_ai_unavailable",
-      });
-    }
-  } catch {
-    return NextResponse.json({ error: "Unable to parse request payload." }, { status: 400 });
+    const analysis = buildHeuristicAnalysis(result.data as any);
+    return NextResponse.json(analysis);
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to process analysis" }, { status: 500 });
   }
 }
